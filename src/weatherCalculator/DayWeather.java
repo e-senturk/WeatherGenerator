@@ -9,6 +9,7 @@ public class DayWeather {
     private double averageWind;
     private double maxWind;
 
+    // Hava durumu verilerinin saklandığı nesne
     public DayWeather(String averageTemp, String maxTemp, String minTemp, String humidity, String visibility, String averageWind, String maxWind) {
         this.averageTemp = fixValue(averageTemp);
         this.maxTemp = fixValue(maxTemp);
@@ -18,6 +19,7 @@ public class DayWeather {
         this.averageWind = fixValue(averageWind);
         this.maxWind = fixValue(maxWind);
     }
+    // Eğer değer verilmemişse tüm değerleri 0 olan bir nesne oluşturan constructor
     public DayWeather() {
         this.averageTemp = 0;
         this.maxTemp = 0;
@@ -27,15 +29,16 @@ public class DayWeather {
         this.averageWind = 0;
         this.maxWind = 0;
     }
+    // String double a çevirlebiliyorsa sayısı çevrilemiyosa minimum double değerini döndüren fonksiyon
     private double fixValue(String text){
         try{
             return Double.parseDouble(text);
         }
         catch (NumberFormatException e){
-            return Integer.MIN_VALUE;
+            return Double.MIN_VALUE;
         }
     }
-
+    // Getter Metotları
     public double getAverageTemp() {
         return averageTemp;
     }
@@ -63,7 +66,7 @@ public class DayWeather {
     public double getMaxWind() {
         return maxWind;
     }
-
+    // Yazdırmak için kulalndığım metot
     @Override
     public String toString() {
         return "DayWeather{" +
@@ -78,37 +81,43 @@ public class DayWeather {
     }
 
 
-
+    /* Bir hava durumu verisine başka bir hava durumu verisindeki tüm değerleri istenilen kat sayı ile çarpıp ekler
+     Eğer geçersiz veri ise o değeri çarpmaz.
+     Coefficent her geçerli veri için arttırılır.
+     Bu sayede oran hesaplanırken geçerli sayıdaki veri katsayılarının çarpımına bölme işlemi yapılabilmiş olur.
+     */
     public void addMul(DayWeather day, int value,int [] coefficient){
-        if(day.getAverageTemp()!=Integer.MIN_VALUE){
+        // Veriler tek tek geçerli mi değil mi diye değerlendirilir geçerli ise çarpılıp eklenir.
+        if(day.getAverageTemp()!=Double.MIN_VALUE){
             this.averageTemp += day.getAverageTemp()*value;
             coefficient[0]+=value;
         }
-        if(day.getMaxTemp()!=Integer.MIN_VALUE){
+        if(day.getMaxTemp()!=Double.MIN_VALUE){
             this.maxTemp += day.getMaxTemp()*value;
             coefficient[1]+=value;
         }
-        if(day.getMinTemp()!=Integer.MIN_VALUE){
+        if(day.getMinTemp()!=Double.MIN_VALUE){
             this.minTemp += day.getMinTemp()*value;
             coefficient[2]+=value;
         }
-        if(day.getHumidity()!=Integer.MIN_VALUE){
+        if(day.getHumidity()!=Double.MIN_VALUE){
             this.humidity += day.getHumidity()*value;
             coefficient[3]+=value;
         }
-        if(day.getVisibility()!=Integer.MIN_VALUE){
+        if(day.getVisibility()!=Double.MIN_VALUE){
             this.visibility += day.getVisibility()*value;
             coefficient[4]+=value;
         }
-        if(day.getAverageWind()!=Integer.MIN_VALUE){
+        if(day.getAverageWind()!=Double.MIN_VALUE){
             this.averageWind += day.getAverageWind()*value;
             coefficient[5]+=value;
         }
-        if(day.getMaxWind()!=Integer.MIN_VALUE){
+        if(day.getMaxWind()!=Double.MIN_VALUE){
             this.maxWind += day.getMaxWind()*value;
             coefficient[6]+=value;
         }
     }
+    // Önceki fonksiyonda oluşturulan coefficent matrisine veriler bölünür bu sayede istenilen ortalama değeri alınmış olur.
     public void div(int [] coefficient){
         this.averageTemp/=coefficient[0];
         this.maxTemp/=coefficient[1];
@@ -117,6 +126,40 @@ public class DayWeather {
         this.visibility/=coefficient[4];
         this.averageWind/=coefficient[5];
         this.maxWind/=coefficient[6];
+    }
+
+    public static boolean[] isSuccessful(DayWeather d1,DayWeather d2,int tempDiff,int humDiff, int visDiff, int windDiff){
+        boolean []success = new boolean[]{false,false,false,false,false,false,false};
+        if(d1==null || d2 == null)
+            return success;
+        if(Math.abs(d1.getAverageTemp()-d2.getAverageTemp())<=tempDiff){
+            success[0]=true;
+        }
+        if(Math.abs(d1.getMaxTemp()-d2.getMaxTemp())<=tempDiff){
+            success[1]=true;
+        }
+        if(Math.abs(d1.getMinTemp()-d2.getMinTemp())<=tempDiff){
+            success[2]=true;
+        }
+        if(Math.abs(d1.getHumidity()-d2.getHumidity())<=humDiff){
+            success[3]=true;
+        }
+        if(Math.abs(d1.getVisibility()-d2.getVisibility())<=visDiff){
+            success[4]=true;
+        }
+        if(Math.abs(d1.getAverageWind()-d2.getAverageWind())<=windDiff){
+            success[5]=true;
+        }
+        if(Math.abs(d1.getMaxWind()-d2.getMaxWind())<=windDiff){
+            success[6]=true;
+        }
+        return success;
+    }
+    public static void addValue(int[] sum,boolean[] value){
+        for(int i=0;i<7;i++){
+            if(value[i])
+                sum[i]++;
+        }
     }
 
 }

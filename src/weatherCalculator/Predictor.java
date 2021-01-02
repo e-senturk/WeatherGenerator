@@ -6,8 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class Calc {
-    public static HashMap<Integer,DayWeather> readData(String city,String path) {
+public class Predictor {
+    // İstenilen şehir için dosyayı okur ve dosyadaki değerlerden hashmap oluşturur.
+    public static HashMap<Integer, DayWeather> readData(String city, String path) {
         File input = new File(path+"/"+city+".txt");
         HashMap<Integer, DayWeather> hash = new HashMap<>();
         try{
@@ -20,10 +21,11 @@ public class Calc {
             }
             reader.close();
         } catch (FileNotFoundException e) {
-            System.out.println("Dosya bulunamadı");
+            //System.out.println("Dosya bulunamadı");
         }
         return hash;
     }
+    // Verilen gün au ve yol değerlerini string halde tarihe çevirir bu sayede hash üzerinde arama yapabiliriz
     public static int convertDate(int d,int m,int y){
         StringBuilder result = new StringBuilder();
         if(d<10)
@@ -34,6 +36,7 @@ public class Calc {
         result.append(m).append("-").append(y);
         return convertDate(result.toString());
     }
+    // String tarih değerini integer bir değere çevirir
     public static int convertDate(String date){
         try{
             return (int) (new SimpleDateFormat("dd-MM-yyyy").parse(date).getTime() / 86400000);
@@ -43,12 +46,20 @@ public class Calc {
             return -1;
         }
     }
+    // Verilen integer tarih değerini hesaplamak için kullanılacak yakın tarihlerin integer değerini ayarlardan alınan range değerine göre oluşturur.
     public static Integer[] generateCloseYears(int date,int range){
         Integer[] years= new Integer[range*2+1];
         for(int i=date-range,j=0;i<=date+range;i++,j++)
             years[j]=i;
         return years;
     }
+    /*İstenilen tarih ve alınan input hashından
+      Yakın tarihler hesaplanır
+      Hesaplanan yakın tarihlere göre verilen tarihten uzaklaştıkça hava durumunun etkisi step oranında azalarak
+      bir ortalama alınır. Ortalama alırken eğer eksik veri fazla ise uzak tarihlerin verileri daha anlamlı hale
+      gelebileceğinden eksik veri sayısı belli bir limiti geçince veri güvensiz kabul edilip o yılın verileri hesaplamaya
+      dahil edilmez.
+     */
     public static DayWeather generateYearRatio(int date,HashMap<Integer,DayWeather> hash,int step,int missingData){
         int start = 100%step;
         Integer[] years = generateCloseYears(date,100/step);

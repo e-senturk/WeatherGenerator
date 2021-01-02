@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="WeatherPredictor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/WeatherPredictor_jar</output-path>
+    <root id="archive" name="WeatherPredictor.jar">
+      <element id="module-output" name="WeatherPredictor" />
+      <element id="extracted-dir" path="$USER_HOME$/JavaLibraries/selenium-server-4.0.0-alpha-7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/JavaLibraries/flatlaf-0.45.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/JavaLibraries/jcalendar-1.4.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

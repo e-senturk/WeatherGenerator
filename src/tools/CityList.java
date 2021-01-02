@@ -1,6 +1,6 @@
-package weatherGenerator;
-
+package tools;
 public @interface CityList {
+    // Şehirlerin listesini ve sitedeki kodunu tutan değişken
     String[][] cityCodes = {
             {"Adana", "ws-173520"},
             {"Adana-Incirlik", "ws-173500"},

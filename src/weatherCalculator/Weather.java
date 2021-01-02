@@ -1,5 +1,7 @@
 package weatherCalculator;
 import main.MainPanel;
+import tools.GradientPanel;
+import tools.Settings;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,30 +35,38 @@ public class Weather {
     private JLabel maxWindLabel2;
     JPanel expectedPanel;
     JPanel resultPanel;
-
+    // Hava durumu yazdırılan UI bölümlerini saklayan dizi
     private final JLabel []area1= new JLabel[]{tempLabel1,mxTempLabel1,mnTempLabel1,humLabel1,visibleLabel1,avgWindLabel1,maxWindLabel1};
     private final JLabel []area2= new JLabel[]{tempLabel2,mxTempLabel2,mnTempLabel2,humLabel2,visibleLabel2,avgWindLabel2,maxWindLabel2};
+    // Ayların türkçe hallerini saklayan dizi
     public static final String [] months= {"Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"};
+    // Frame yapısını oluşturur
     public static void init() {
         mainFrame = new JFrame("Hava Durumu Tahmini");
         mainFrame.setContentPane(new Weather().mainPanel);
         mainFrame.setPreferredSize(new Dimension(420, 450));
-        mainFrame.setLocation(300, 100);
         mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         ImageIcon img = new ImageIcon("res/ytulogo.png");
         mainFrame.setIconImage(img.getImage());
         mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
+        // Çıkış yapılınca ana ekrana döner
         mainFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
                 MainPanel.init();
             }
         });
     }
+
     public Weather(){
+        // Şehir değerlerini input klasöründen okur.
         initCities();
+        // Gerekli alanları doldurur.
         initMonth();
+        // Gün alanını doldurur
         initDay(31,true);
+        // Ay değiştirildiğinde gün değerini otomatik olarak ayın gün sayısına ayarlar.
         month.addActionListener(e -> {
             int i = month.getSelectedIndex();
             if(i==1)
@@ -66,59 +76,85 @@ public class Weather {
             else
                 initDay(31,false);
         });
-        calculateButton.addActionListener(e -> calculateWeather());
+        // Hesaplama işlemini başlatır.
+        calculateButton.addActionListener(e -> {
+            DayWeather[] answer =calculateWeather(month.getSelectedIndex()+1,day.getSelectedIndex()+1,Objects.requireNonNull(cities.getSelectedItem()).toString());
+            // Hesaplanan sonuçlar 1. alana Gerçek sonuçlar 2. alana yazdırılır.
+            initWeather(answer[0],area1);
+            initWeather(answer[1],area2);
+        });
+        // Ayarları açar ve bu frame'i kapatır.
         settingsButton.addActionListener(e -> {
             Settings.init();
             mainFrame.dispose();
         });
     }
-    private void calculateWeather(){
-        int m = month.getSelectedIndex()+1;
-        int d = day.getSelectedIndex()+1;
+    // Havadurumu hesabı yapan Fonksiyon
+    public static DayWeather[] calculateWeather(int m,int d,String city){
+        // Seçilen şehre göre input ve output için hash tablosu oluşturur.
         HashMap<Integer,DayWeather> hashInput,hashOutput;
         try{
-            hashInput = Calc.readData(Objects.requireNonNull(cities.getSelectedItem()).toString(),"input");
-            hashOutput = Calc.readData(Objects.requireNonNull(cities.getSelectedItem()).toString(),"output");
+            hashInput = Predictor.readData(city,"input");
+            hashOutput = Predictor.readData(city,"output");
         }
         catch(NullPointerException ex){
+            //      Eğer dosyalar eksikse hash tablolarını null değerine atar.
             hashInput = null;
             hashOutput = null;
             System.out.println("Şehir bulunamadı");
         }
-        ////////////////////////////////
+        //Ayarları settings classından alır.
         new Settings();
-        int[] settings = Settings.getSettings();
+        int[] settings = Settings.getPredicateSettings();
         int ratio = settings[0];
         int missingData = settings[1];
         int step = settings[2];
         int inputStartYear = settings[3];
         int inputEndYear = settings[4];
         int outputYear = settings[5];
-        ///////////////////////////////
+        // Sonuçları hesaplamak için boş bir havadurumu nesnesi oluşturur.
         DayWeather result = new DayWeather();
+        // Katsayılar matrisi 0 olacak şekilde oluşturulur.
         int [] coefficient= new int[]{0,0,0,0,0,0,0};
+        // Tüm yıllar için predictor metodu ile hesaplama yapılır.
+        // Sonuç null değilse oran miktarınca her yıl giderek az oranda etkileyecek şekilde sonuçlar nesnesine eklenir.
         for(int i=inputEndYear,j=100;i>=inputStartYear;i--,j-=ratio){
-            DayWeather weatherYear = Calc.generateYearRatio(Calc.convertDate(d,m,i),hashInput,step,missingData);
+            DayWeather weatherYear = Predictor.generateYearRatio(Predictor.convertDate(d,m,i),hashInput,step,missingData);
             if(weatherYear!=null){
                 result.addMul(weatherYear,j,coefficient);
             }
         }
-        assert hashOutput != null;
-        DayWeather expected = hashOutput.get(Calc.convertDate(d,m,outputYear));
+        // Hesaplanan sonuç coefficent dizisine bölünerek hesaplama tamamlanır.
         result.div(coefficient);
-        System.out.println(expected);
-        initWeather(result,area1);
-        initWeather(expected,area2);
+        // Sonuç hava durumu output verilerinden okunur. Eğer output verisi yoksa null döndürülür.
+        DayWeather expected;
+        if(hashInput == null)
+            expected =null;
+        else
+            expected= hashOutput.get(Predictor.convertDate(d,m,outputYear));
+        return new DayWeather[]{result,expected};
     }
-    private void initCities(){
+    public static Object[] getCityNames(){
+        Object[] fileNames= null;
         try{
             File folder = new File("input");
             File[] listOfFiles = folder.listFiles();
-            Object[] fileNames = new Object[Objects.requireNonNull(listOfFiles).length];
+            fileNames = new Object[Objects.requireNonNull(listOfFiles).length];
             for (int i = 0; i < Objects.requireNonNull(listOfFiles).length; i++) {
                 if (listOfFiles[i].isFile())
                     fileNames[i] = listOfFiles[i].getName().replace(".txt","");
             }
+        }
+        catch(NullPointerException e){
+            System.out.println("No city found");
+        }
+        return fileNames;
+    }
+
+    // Şehir comboboxunu input klasöründeki dosyaların adlarına göre ayarlayan fonksiyon.
+    private void initCities(){
+        try{
+            Object[] fileNames = getCityNames();
             DefaultComboBoxModel<Object> model = new DefaultComboBoxModel<>(fileNames);
             cities.setModel(model);
         }
@@ -126,10 +162,13 @@ public class Weather {
             System.out.println("No city found");
         }
     }
+    // Ayları türkçe olarak belirtiğimiz diziden alıp comboboxa yazdırır.
     private void initMonth(){
         DefaultComboBoxModel<Object> model = new DefaultComboBoxModel<>(months);
         month.setModel(model);
     }
+    // Günleri gün sayısına göre yazdırır.
+    // Her ay değiştirildiğinde son seçili gün tekrar seçilir.
     private void initDay(int dayCount,boolean start){
         int index=0;
         if(!start){
@@ -148,6 +187,7 @@ public class Weather {
                 day.setSelectedIndex(dayCount-1);
         }
     }
+    // Area 1 ve Area 2 için gradiyent arkaplan oluşturulur.
     private void createUIComponents() {
         Color purple = new Color(129,15,99);
         Color orange = new Color(252,80,57);
@@ -156,6 +196,7 @@ public class Weather {
         resultPanel = new GradientPanel(purple,orange);
         expectedPanel = new GradientPanel(midnight,purpleNight);
     }
+    //eğer verilen gün null ise boş değerleri, diğer durumlarda hava durumu değerlerini verilen alana yazdıran fonksiyon
     private void initWeather(DayWeather day,JLabel[] weather){
         if(day == null){
             weather[0].setText("--°C");

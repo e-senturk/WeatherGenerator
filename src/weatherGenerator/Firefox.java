@@ -6,27 +6,19 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 public class Firefox {
+    // kullanılan webdriver
     private static final String webDriverLocation = "webdriver/geckodriver.exe";
-    private static final String webDriverLocationMac = "webdriver/geckodriver";
+    // kullanılan tarayıcının hangisi olduğunu göstermek istediğimiz (Safari seçildi)
     private static final String userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Safari/605.1.15\")";
+    // Driver nesnesi
     private static FirefoxDriver driver;
-    private static String htmlInformation;
-    private static String osName = null;
 
     //Singleton class ;
     private Firefox() {
     }
 
-
-
-    public static String getHtmlInformation() {
-        return htmlInformation;
-    }
-
-
-
-
-    public static void updateUrl(String url, int timeMs) {
+    // Bekleme süresine göre url yükleyen ve içindeki html verisini htmlInformation a kaydeden fonksiyon
+    public static String updateUrl(String url, int timeMs) {
         try {
             //Driver içine link alındı.
             driver.get(url);
@@ -40,21 +32,19 @@ public class Firefox {
 
             if (driver != null) {
                 System.out.println(driver);
-                htmlInformation = driver.getPageSource();
+                return driver.getPageSource();
             } else {
                 System.out.println("Link okunamadı.\n");
             }
         } catch (WebDriverException e) {
             System.out.println(e.getMessage());
         }
+        return "";
     }
 
+    // Verilen özelliklere göre firefox driverı oluşturan fonksiyon
     public static void createFirefox(String url, boolean outScreenFirefox, boolean hiddenScreen,int timeMs) {
-        if (isWindows()) {
-            System.setProperty("webdriver.gecko.driver", webDriverLocation);
-        } else {
-            System.setProperty("webdriver.gecko.driver", webDriverLocationMac);
-        }
+        System.setProperty("webdriver.gecko.driver", webDriverLocation);
         // Sistem yapısı webDriver incelenerek oluşturuldu.
         FirefoxOptions options = new FirefoxOptions();
         //Seçenekler belirlendi.
@@ -74,17 +64,7 @@ public class Firefox {
         updateUrl(url, timeMs);
     }
 
-    private static String getOsName() {
-        if (osName == null) {
-            osName = System.getProperty("os.name");
-        }
-        return osName;
-    }
-
-    private static boolean isWindows() {
-        return getOsName().startsWith("Windows");
-    }
-
+    // Firefox driverını kapatan fonksiyon
     public static void destroyFirefox() {
         try {
             if (isOperates()) {
@@ -97,6 +77,7 @@ public class Firefox {
 
     }
 
+    // Firefoxun driverın çalışıp çalışmadığını döndüren fonksiyon
     public static boolean isOperates() {
         if (driver == null) {
             return false;

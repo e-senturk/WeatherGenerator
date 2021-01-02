@@ -1,13 +1,13 @@
-package weatherCalculator;
+package tools;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-
 import javax.swing.JPanel;
 
+//Verilen 2 renk ile gradiyent arkaplan oluşturan panel
 public class GradientPanel extends JPanel {
     private final Color color1;
     private final Color color2;

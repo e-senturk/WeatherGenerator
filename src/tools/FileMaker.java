@@ -1,14 +1,16 @@
-package weatherGenerator;
+package tools;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+// Dosya yazma işlemlerini düzenleyen class yapısı
 public class FileMaker {
-    public static void addFile(String type,String fileName,String text) {
+    // Verilen klasör ve dosya adındaki dosyaı açıp verilen texti önceki textin sonuna ekleyen fonksiyon
+    public static void addFile(String folderName,String fileName,String text) {
         try {
-            File file = new File(type+"/"+fileName+".txt");
+            File file = new File(folderName+"/"+fileName+".txt");
             FileWriter fr = new FileWriter(file, true);
             BufferedWriter br = new BufferedWriter(fr);
             br.write(text);
@@ -19,6 +21,7 @@ public class FileMaker {
             e.printStackTrace();
         }
     }
+    // verilen isimdeki klasörü ana dizinde oluşturan fonksiyon
     public static boolean generateFolders(String folderName){
         File file = new File(folderName);
         if(file.mkdir()){
@@ -30,6 +33,7 @@ public class FileMaker {
             return false;
         }
     }
+    // verilen isimdeki klasörü ve içindeki dosyaları silen fonksiyon
     public static void deleteDirectory(String folderName) {
         File directoryToBeDeleted = new File(folderName);
         File[] allContents = directoryToBeDeleted.listFiles();
