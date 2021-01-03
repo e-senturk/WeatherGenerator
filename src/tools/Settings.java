@@ -41,6 +41,13 @@ public class Settings {
     private JYearChooser inputEndChooser;
     private JYearChooser outputYearChooser;
 
+    // Eski değerleri okur
+    public Settings() {
+        initFields();
+        saveButton.addActionListener(e -> setDataPredicate(ratioChooser.getYear(), missingDataChooser.getYear(), stepChooser.getYear(), inputStartChooser.getYear(),
+                inputEndChooser.getYear(), outputYearChooser.getYear()));
+    }
+
     // Frame yapısını oluşturur.
     public static void init() {
         JFrame mainFrame = new JFrame("Ayarlar");
@@ -58,12 +65,15 @@ public class Settings {
             }
         });
     }
-    // Eski değerleri okur
-    public Settings(){
-        initFields();
-        saveButton.addActionListener(e -> setDataPredicate(ratioChooser.getYear(),missingDataChooser.getYear(),stepChooser.getYear(), inputStartChooser.getYear(),
-                inputEndChooser.getYear(),outputYearChooser.getYear()));
+
+    public static int[] getPredicateSettings() {
+        return new int[]{ratio, missingData, step, inputStartYear, inputEndYear, outputYear};
     }
+
+    public static int[] getGenerateSettings() {
+        return new int[]{inputStartYear, inputEndYear, outputYear, firefoxMode};
+    }
+
     // Ayarları sisteme kaydeder.
     public void setDataPredicate(int ratio, int missingData, int step, int inputStartYear, int inputEndYear, int outputYear) {
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
@@ -74,14 +84,16 @@ public class Settings {
         prefs.putInt(ID5, inputEndYear);
         prefs.putInt(ID6, outputYear);
     }
+
     // Ayarları sisteme kaydeder.
-    public void setDataGenerate(int inputStartYear,int inputEndYear,int outputYear,int ffMode) {
+    public void setDataGenerate(int inputStartYear, int inputEndYear, int outputYear, int ffMode) {
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
         prefs.putInt(ID4, inputStartYear);
         prefs.putInt(ID5, inputEndYear);
         prefs.putInt(ID6, outputYear);
         prefs.putInt(ID7, ffMode);
     }
+
     // Ayarları sistemden okur
     private void getData() {
         Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
@@ -91,8 +103,9 @@ public class Settings {
         inputStartYear = prefs.getInt(ID4, 2010);
         inputEndYear = prefs.getInt(ID5, 2019);
         outputYear = prefs.getInt(ID6, 2020);
-        firefoxMode = prefs.getInt(ID7,2);
+        firefoxMode = prefs.getInt(ID7, 2);
     }
+
     // Verilen alanların arayayüz bağlantılarının yapıldığı fonksiyon
     private void initFields() {
         getData();
@@ -108,12 +121,5 @@ public class Settings {
         inputEndYearPanel.add(inputEndChooser);
         outputYearChooser = YearChooser.generateYearChooser(outputYear, 1960, Calendar.getInstance().get(Calendar.YEAR));
         outputYearPanel.add(outputYearChooser);
-    }
-
-    public static int[] getPredicateSettings(){
-        return new int[]{ratio,missingData,step,inputStartYear,inputEndYear,outputYear};
-    }
-    public static int[] getGenerateSettings(){
-        return new int[]{inputStartYear,inputEndYear,outputYear,firefoxMode};
     }
 }

@@ -1,4 +1,5 @@
 package tools;
+
 public @interface CityList {
     // Şehirlerin listesini ve sitedeki kodunu tutan değişken
     String[][] cityCodes = {
@@ -82,7 +83,7 @@ public @interface CityList {
             {"Ordu", "ws-170330"},
             {"Rize", "ws-170400"},
             {"Sakarya", "ws-170690"},
-            {"Samsun","ws-170300"},
+            {"Samsun", "ws-170300"},
             {"Samsun-Carsamba", "ws-170310"},
             {"Sanliurfa", "ws-172700"},
             {"Siirt", "ws-172100"},
