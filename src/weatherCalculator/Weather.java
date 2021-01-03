@@ -60,6 +60,7 @@ public class Weather {
     }
 
     public Weather(){
+        // Ayarları yükler
         // Şehir değerlerini input klasöründen okur.
         initCities();
         // Gerekli alanları doldurur.
@@ -68,9 +69,15 @@ public class Weather {
         initDay(31,true);
         // Ay değiştirildiğinde gün değerini otomatik olarak ayın gün sayısına ayarlar.
         month.addActionListener(e -> {
+            new Settings();
+            int outputYear = Settings.getPredicateSettings()[5];
             int i = month.getSelectedIndex();
-            if(i==1)
-                initDay(29,false);
+            if(i==1){
+                if(outputYear%4==0)
+                    initDay(29,false);
+                else
+                    initDay(28,false);
+            }
             else if(i==3||i==5||i==8||i==10)
                 initDay(30,false);
             else
