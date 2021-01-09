@@ -24,6 +24,8 @@ public class Generate {
     private JRadioButton firefoxOutScreen;
     private JRadioButton visibleFirefox;
     private JButton saveSettings;
+    private JLabel inputInfo;
+    private JLabel outputInfo;
     private JYearChooser inputStartChooser;
     private JYearChooser inputEndChooser;
     private JYearChooser outputYearChooser;
@@ -32,8 +34,8 @@ public class Generate {
     // Alanların başlangıç değerlerini oluştur ve button listenerları ata
     public Generate() {
         initFields();
-        generateInput.addActionListener(e -> generator("input"));
-        generateOutput.addActionListener(e -> generator("output"));
+        generateInput.addActionListener(e -> swingWorker("input"));
+        generateOutput.addActionListener(e -> swingWorker("output"));
         saveSettings.addActionListener(e -> {
             Settings x = new Settings();
             int ffMode = 0;
@@ -49,7 +51,7 @@ public class Generate {
     public static void init() {
         JFrame mainFrame = new JFrame("Veritabanı Oluştur");
         mainFrame.setContentPane(new Generate().mainPanel);
-        mainFrame.setPreferredSize(new Dimension(420, 230));
+        mainFrame.setPreferredSize(new Dimension(460, 260));
         mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         ImageIcon img = new ImageIcon("res/ytulogo.png");
         mainFrame.setIconImage(img.getImage());
@@ -60,33 +62,41 @@ public class Generate {
         mainFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
                 MainPanel.init();
+                Database.setIsWorking(false);
             }
         });
     }
-
-    //Seçilen özelliklere göre input veya outputu firefox üzerinden oluşturan fonksiyon
-    public void generator(String type) {
-        int confirmed = 0;
-        // Seçilen input yılının doğru olup olmadığının kontrolü
-        if (inputStartChooser.getYear() >= inputEndChooser.getYear())
-            JOptionPane.showMessageDialog(null, "İnput başlangıç yılı bitiş yılından küçük olmalıdır.", "Uyarı", JOptionPane.INFORMATION_MESSAGE);
-        else {
-            // Eğer klasör zaten varsa
-            if (!FileMaker.generateFolders(type)) {
-                //Eskisini silmek istediğini sor
-                confirmed = JOptionPane.showOptionDialog(null,
-                        "Eski " + type + " bulundu silmek istiyor musunuz?", type,
-                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, yesNoOption, null);
-                if (confirmed == 0) {
-                    //Eski verileri sil ve yeni boş kasör oluştur
-                    FileMaker.deleteDirectory(type);
-                    FileMaker.generateFolders(type);
+    private void swingWorker(String type) {
+        SwingWorker<String, Object> sw1 = new SwingWorker<String, Object>() {
+            @Override
+            protected String doInBackground() {
+                int confirmed = 0;
+                // Seçilen input yılının doğru olup olmadığının kontrolü
+                if (inputStartChooser.getYear() >= inputEndChooser.getYear())
+                    JOptionPane.showMessageDialog(null, "İnput başlangıç yılı bitiş yılından küçük olmalıdır.", "Uyarı", JOptionPane.INFORMATION_MESSAGE);
+                else {
+                    // Eğer klasör zaten varsa
+                    if (!FileMaker.generateFolders(type)) {
+                        //Eskisini silmek istediğini sor
+                        confirmed = JOptionPane.showOptionDialog(null,
+                                "Eski " + type + " bulundu silmek istiyor musunuz?", type,
+                                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, yesNoOption, null);
+                        if (confirmed == 0) {
+                            //Eski verileri sil ve yeni boş kasör oluştur
+                            FileMaker.deleteDirectory(type);
+                            FileMaker.generateFolders(type);
+                        }
+                    }
+                    if (confirmed == 0) {
+                        Database.generateDatabase(type, firefoxOutScreen.isSelected(), firefoxBackground.isSelected(), inputStartChooser.getYear(), inputEndChooser.getYear(), outputYearChooser.getYear(), inputInfo, outputInfo);
+                    }
                 }
+                return "Success";
             }
-            if (confirmed == 0) {
-                Database.generateDatabase(type, firefoxOutScreen.isSelected(), firefoxBackground.isSelected(), inputStartChooser.getYear(), inputEndChooser.getYear(), outputYearChooser.getYear());
-            }
-        }
+        };
+
+        // executes the swingworker on worker thread
+        sw1.execute();
     }
 
     public void initFields() {

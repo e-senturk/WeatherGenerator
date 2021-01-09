@@ -3,14 +3,17 @@ package weatherGenerator;
 import tools.CityList;
 import tools.FileMaker;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 //Veri tabanı oluşturan fonksiyonların bulunduğu class yapısı
 public class Database {
+    private static boolean isWorking;
     // Seçilen özelliklere göre veri tabanı oluşturur
     public static void generateDatabase(String type, boolean outScreenFirefox, boolean hiddenFirefox, int inputStartYear,
-                                        int inputEndYear, int outputYear) {
+                                        int inputEndYear, int outputYear,JLabel infoInput, JLabel infoOutput) {
+        isWorking = true;
         // Başlangıç sayfası google olacak şekilde firefoxu başlatır
         Firefox.createFirefox("https://www.google.com", outScreenFirefox, hiddenFirefox, 400);
         // Eğer input alınacaksa tüm şehir kodları,ve input yılları için iç içe loop oluşturulur
@@ -22,9 +25,11 @@ public class Database {
                     // tarih için bir string oluşturulur
                     String dateText = generateStringDate(date);
                     // O şehir için o aya ait veriler dosyaya yazdırılır
-                    generateMonth(type, dateText, city);
+                    generateMonth(type, dateText, city, infoInput);
                     // Sonraki aya geçilir
                     nextMonth(date);
+                    if(!isWorking)
+                        return;
                 }
             }
         }
@@ -37,26 +42,31 @@ public class Database {
                     // tarih için bir string oluşturulur
                     String dateText = generateStringDate(date);
                     // O şehir için o aya ait veriler dosyaya yazdırılır
-                    generateMonth(type, dateText, city);
+                    generateMonth(type, dateText, city, infoOutput);
                     // Sonraki aya geçilir
                     nextMonth(date);
+                    if(!isWorking)
+                        return;
                 }
             }
         }
         // İşlem bitince firefox kapatılır.
         Firefox.destroyFirefox();
     }
+    public static void setIsWorking(boolean isWorking) {
+        Database.isWorking = isWorking;
+    }
 
     // Siteden alınan html verisi üzerindeki bi takım kodlama metodları kullanılmıştı o nedenle veriyi çekerken bu fonksiyonlara
     // ihtiyaç duydum
-    public static void generateMonth(String type, String date, String[] city) {
+    public static void generateMonth(String type, String date, String[] city, JLabel info) {
         // Verilen verilere göre linki okur ve html verisini alır
         String pageContent = Firefox.updateUrl("https://en.tutiempo.net/climate/" + date + "/" + city[1] + ".html", 400);
         // Alınan verideki kodlu kısımları çözmek için anahtar değerleri ile bir hash tablosu oluşturulur.
         String pageHash = findBetween(pageContent, "<style>.tablancpy", "</table>", 0);
         HashMap<String, String> numberCodes = generateNumberHash(findBetweenList(pageHash, "span", "numspan"));
         // İşlem uzun sürdüğünden hangi ilde olduğumu takip etmek için çıktı aldım
-        System.err.println(city[0]);
+        info.setText(city[0]+ " Oluşturuluyor.");
         // Tablo bilgilerini aldım
         String pageInfo = findBetween(pageContent, "In the monthly average, Total days with fog)\">FG", "</table>", 0);
         // Tablodaki 1 aylık bilgiyi günlere böldüm.
