@@ -5,8 +5,11 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
+import java.util.Locale;
+
 public class Firefox {
     // kullanılan webdriver
+    private static final String webDriverLocationMac = System.getProperty("user.dir") + "/webdriver/geckodriver";
     private static final String webDriverLocation = "webdriver/geckodriver.exe";
     // kullanılan tarayıcının hangisi olduğunu göstermek istediğimiz (Safari seçildi)
     private static final String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Safari/605.1.15\")";
@@ -44,7 +47,16 @@ public class Firefox {
 
     // Verilen özelliklere göre firefox driverı oluşturan fonksiyon
     public static void createFirefox(String url, boolean outScreenFirefox, boolean hiddenScreen, int timeMs) {
-        System.setProperty("webdriver.gecko.driver", webDriverLocation);
+        System.out.println("Test2");
+        System.out.println(System.getProperty("os.name"));
+        if(System.getProperty("os.name").toLowerCase().contains("mac")) {
+            System.out.println("This is a Mac Os X system");
+            System.setProperty("webdriver.gecko.driver",webDriverLocationMac);
+        }
+        else{
+            System.out.println("This is a Windows system");
+            System.setProperty("webdriver.gecko.driver", webDriverLocation);
+        }
         // Sistem yapısı webDriver incelenerek oluşturuldu.
         FirefoxOptions options = new FirefoxOptions();
         //Seçenekler belirlendi.

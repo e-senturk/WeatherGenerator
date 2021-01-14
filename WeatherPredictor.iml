@@ -7,8 +7,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="selenium-server-4.0.0-alpha-7" level="application" />
     <orderEntry type="library" name="flatlaf-0.45" level="application" />
     <orderEntry type="library" name="jcalendar-1.4" level="application" />
+    <orderEntry type="library" name="selenium-server-4.0.0-alpha-7" level="application" />
+    <orderEntry type="library" name="flatlaf-0.46" level="application" />
   </component>
 </module>
